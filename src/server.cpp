@@ -75,6 +75,8 @@ int main() {
        DnsHeader Header = DnsHeader(buffer);
        Header.GetBytes(response);
 
+       Header.SetQR(1);
+
        // for(int i = 0; i < bytesRead; i++)
        //     cout << hex << (int)response[i] << " ";
        //
