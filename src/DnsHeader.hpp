@@ -14,7 +14,6 @@ using namespace std;
 class DnsHeader {
 private:
     uint16_t ID;           // Identificador único
-    uint8_t QR;            // Query/Response flag
     uint8_t OpCode;        // Código de operación
     uint8_t AuthAns;       // Autoritative Answer flag
     uint8_t Trun;          // Truncation flag
@@ -28,7 +27,7 @@ public:
     uint16_t AnswCount;    // Número de respuestas
     uint16_t AuthCount;    // Número de registros de autoridad
     uint16_t AddiCount;    // Número de registros adicionales
-
+    uint8_t QR;            // Query/Response flag
     // Constructor por defecto
     DnsHeader() 
         : ID(0), QR(0), OpCode(0), AuthAns(0), Trun(0), RecurDes(0), RecurAva(0),

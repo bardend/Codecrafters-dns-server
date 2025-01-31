@@ -18,6 +18,7 @@ class DnsMessage {
         DnsMessage(const uint8_t* buffer)
                    : Header(buffer) {
 
+            Header.QR = 1;
             const uint8_t* HeaderlessBytes = buffer + SizeHeader;
             
             auto QuestionCount = Header.QuesCount;
