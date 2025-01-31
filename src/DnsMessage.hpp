@@ -24,6 +24,7 @@ class DnsMessage {
                    : Header(buffer),
                      buffer(buffer) {
             Header.QR = 1;
+            Header.AnswCount = 1;
             ParseQuestion();
         }
 
@@ -38,7 +39,7 @@ class DnsMessage {
                 Questions.push_back(Q);
                 CurrentPos += Q.Len;
             }
-            //ParseAnswer(CurrentPos + SizeHeader);
+            ParseAnswer(CurrentPos + SizeHeader);
         }
         
         void ParseAnswer(int SizeBeforeAnswer) {

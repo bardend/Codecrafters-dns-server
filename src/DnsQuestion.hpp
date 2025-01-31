@@ -42,9 +42,7 @@ class DnsQuestion {
             WriteToNetwork(RetBytes, DomainEncoding.GetBytes());
             WriteToNetwork(RetBytes, Type);
             WriteToNetwork(RetBytes, Class);
-
             return RetBytes;
-
         }
 };
         

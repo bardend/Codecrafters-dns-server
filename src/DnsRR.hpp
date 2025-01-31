@@ -35,6 +35,15 @@ class DnsRR {
                 Data[i] = buffer[CurrentPos++];
             }
             Len = CurrentPos - pos;
+
+            cout << "Class :" << (int)Class << endl;
+            cout << "Length:" << (int)Length << endl;
+
+
+            for(int i = 0; i < (int)Data.size(); i++) 
+                cout << (int)Data[i] << " ";
+            cout << endl;
+
         }
 
         vector<uint8_t> GetBytes() {
