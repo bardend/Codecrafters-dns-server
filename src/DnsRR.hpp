@@ -28,21 +28,23 @@ class DnsRR {
             Class = (uint16_t)(buffer[CurrentPos + 2] << 8 | buffer[CurrentPos + 3]);
             TTL = buffer[CurrentPos + 4] << 24 | buffer[CurrentPos + 5] << 16 |
                   buffer[CurrentPos + 6] << 8 | buffer[CurrentPos + 7];
-            Length = (uint16_t)(buffer[CurrentPos + 8] << 8 | buffer[CurrentPos + 9]);
+
+            // Length = (uint16_t)(buffer[CurrentPos + 8] << 8 | buffer[CurrentPos + 9]);
+            // Data.resize(Length);
+            // CurrentPos += 10;
+            //
+            // for(int i = 0; i < Length; i++) {
+            //     Data[i] = buffer[CurrentPos++];
+            // }
+            // // Set dafault values
+            Length = 4;
             Data.resize(Length);
             CurrentPos += 10;
-            for(int i = 0; i < Length; i++) {
-                Data[i] = buffer[CurrentPos++];
-            }
+            for(int i = 0; i < Length; i++)
+                Data[i] = 0x08;
+            CurrentPos += Length;
+
             Len = CurrentPos - pos;
-
-            cout << "Class :" << (int)Class << endl;
-            cout << "Length:" << (int)Length << endl;
-
-
-            for(int i = 0; i < (int)Data.size(); i++) 
-                cout << (int)Data[i] << " ";
-            cout << endl;
 
         }
 
