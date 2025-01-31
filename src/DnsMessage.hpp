@@ -3,8 +3,11 @@
 #include <cstring>  // Para memcpy
 #include <arpa/inet.h>  // Para htons()
 #include <array>
+
 #include "DnsHeader.hpp"
 #include "DnsQuestion.hpp"
+#include "DnsRR.hpp"
+#include "NetworkUtils.hpp"
 
 using namespace std;
 
@@ -12,15 +15,21 @@ class DnsMessage {
     private:
         DnsHeader Header;
         vector<DnsQuestion> Questions;
+        vector<DnsRR> Answers;
+        const uint8_t* buffer;
 
     public:
 
         DnsMessage(const uint8_t* buffer)
-                   : Header(buffer) {
-
+                   : Header(buffer),
+                     buffer(buffer) {
             Header.QR = 1;
+            ParseQuestion();
+        }
+
+        void ParseQuestion() {
             const uint8_t* HeaderlessBytes = buffer + SizeHeader;
-            
+
             auto QuestionCount = Header.QuesCount;
 
             int CurrentPos = 0;
@@ -29,17 +38,30 @@ class DnsMessage {
                 Questions.push_back(Q);
                 CurrentPos += Q.Len;
             }
+            //ParseAnswer(CurrentPos + SizeHeader);
+        }
+        
+        void ParseAnswer(int SizeBeforeAnswer) {
+            const uint8_t* AnswerBytes = buffer + SizeBeforeAnswer;
+
+            auto AnswerCount = Header.AnswCount;
+            int CurrentPos = 0;
+            while(AnswerCount--) {
+                auto A = DnsRR(AnswerBytes, CurrentPos);
+                Answers.push_back(A);
+                CurrentPos += A.Len;
+            }
         }
 
        vector<uint8_t> GetBytes() {
            vector<uint8_t> RetBytes = Header.GetBytes();
 
-           for(auto Question : Questions) {
-               auto Q = Question.GetBytes();
-               RetBytes.insert(RetBytes.end(), Q.begin(), Q.end());
-           }
+           for(auto Question : Questions) 
+               WriteToNetwork(RetBytes, Question.GetBytes());
+
+           for(auto Answer : Answers)
+               WriteToNetwork(RetBytes, Answer.GetBytes());
+
            return RetBytes;
        }
 };
-        
-

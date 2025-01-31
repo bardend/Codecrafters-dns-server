@@ -6,9 +6,16 @@
 #include <cstring>  // Para memcpy
 #include <arpa/inet.h>  // Para htons()
 #include <array>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <unistd.h>
+
 
 #include "DnsName.hpp"
+#include "NetworkUtils.hpp"
 
+
+using namespace std;
 
 class DnsQuestion {
     private:
@@ -28,20 +35,16 @@ class DnsQuestion {
             Len = DomainEncoding.Len + 4;
         }
 
+
         vector<uint8_t> GetBytes() {
-            vector<uint8_t>RetBytes(Len);
-            vector<uint8_t>NamesEncoding = DomainEncoding.GetBytes();
-            copy(NamesEncoding.begin(), NamesEncoding.end(), RetBytes.begin());
+            vector<uint8_t>RetBytes;
 
-            int CurrentPos = DomainEncoding.Len;
-
-            uint16_t Type_net = htons(Type);
-            memcpy(RetBytes.data() + CurrentPos, &Type_net, sizeof(Type_net));
-
-            uint16_t Class_net = htons(Class);
-            memcpy(RetBytes.data() + CurrentPos + 2, &Class_net, sizeof(Class_net));
+            WriteToNetwork(RetBytes, DomainEncoding.GetBytes());
+            WriteToNetwork(RetBytes, Type);
+            WriteToNetwork(RetBytes, Class);
 
             return RetBytes;
+
         }
 };
         
