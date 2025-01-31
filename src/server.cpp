@@ -3,7 +3,8 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <unistd.h>
-#include "DnsHeader.hpp"
+
+#include "DnsMessage.hpp"
 
 int main() {
     // Flush after every std::cout / std::cerr
@@ -58,7 +59,7 @@ int main() {
        }
 
        buffer[bytesRead] = '\0';
-
+       //
        // std::cout << "Received " << bytesRead << " bytes: " << buffer << std::endl;
        //
        // for(int i = 0; i < bytesRead; i++) 
@@ -67,15 +68,11 @@ int main() {
        // std::cout << std::endl;
        //
        // std::cout << "============================" << std:: endl;
-       // Create an empty response
        
-       const int LenHeader = 12;
-       uint8_t response[LenHeader];
 
-       DnsHeader Header = DnsHeader(buffer);
-       Header.SetQR(1);
-       Header.GetBytes(response);
+       DnsMessage Response = DnsMessage(buffer);
 
+       vector<uint8_t> response = Response.GetBytes();
 
        // for(int i = 0; i < bytesRead; i++)
        //     cout << hex << (int)response[i] << " ";
@@ -83,10 +80,9 @@ int main() {
        // cout << endl;
        //
        // cout << "Terminacion de la respuesta " << endl;
-       //
+       
 
-       // Send response
-       if (sendto(udpSocket, response, sizeof(response), 0, reinterpret_cast<struct sockaddr*>(&clientAddress), sizeof(clientAddress)) == -1) {
+       if (sendto(udpSocket, response.data(), response.size(), 0, reinterpret_cast<struct sockaddr*>(&clientAddress), sizeof(clientAddress)) == -1) {
            perror("Failed to send response");
        }
    }

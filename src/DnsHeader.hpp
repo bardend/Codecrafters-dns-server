@@ -4,9 +4,11 @@
 #include <cstdint>
 #include <iostream>
 #include <cstring>  // Para memcpy
+#include <vector>
 #include <arpa/inet.h>  // Para htons() y htonl()
 
 
+const int SizeHeader = 12;
 
 using namespace std;
 class DnsHeader {
@@ -20,12 +22,13 @@ private:
     uint8_t RecurAva;      // Recursion Available flag
     uint8_t Reserved;      // Reservado
     uint8_t RespCode;      // Código de respuesta
+
+public:
     uint16_t QuesCount;    // Número de preguntas
     uint16_t AnswCount;    // Número de respuestas
     uint16_t AuthCount;    // Número de registros de autoridad
     uint16_t AddiCount;    // Número de registros adicionales
 
-public:
     // Constructor por defecto
     DnsHeader() 
         : ID(0), QR(0), OpCode(0), AuthAns(0), Trun(0), RecurDes(0), RecurAva(0),
@@ -51,32 +54,32 @@ public:
         AnswCount = (uint16_t)(buffer[6] << 8 | buffer[7]);
         AuthCount = (uint16_t)(buffer[8] << 8 | buffer[9]);
         AddiCount = (uint16_t)(buffer[10] << 8 | buffer[11]);
-
     }
 
+    vector<uint8_t> GetBytes() {
+        std::vector<uint8_t> buffer(SizeHeader);  
 
-    
-    void GetBytes(uint8_t* buffer) {
-        uint16_t id_net = htons(ID);  // Asegurar endianness correcto
-        memcpy(buffer, &id_net, sizeof(id_net));
+        uint16_t id_net = htons(ID); 
+        memcpy(buffer.data(), &id_net, sizeof(id_net));
 
-        // This is not necesary htons dude is only one byte
         uint8_t SecondByte = (QR << 7) | (OpCode << 3) | (AuthAns << 2) | (Trun << 1) | (RecurDes);
         uint8_t ThirdByte = (RecurAva << 7) | (Reserved << 4) | (RespCode);
-
-        memcpy(buffer + 2, &SecondByte, sizeof(SecondByte));
-        memcpy(buffer + 3, &ThirdByte, sizeof(ThirdByte));
+        buffer[2] = SecondByte;
+        buffer[3] = ThirdByte;
 
         uint16_t ques_count_net = htons(QuesCount);
         uint16_t answ_count_net = htons(AnswCount);
         uint16_t auth_count_net = htons(AuthCount);
         uint16_t addi_count_net = htons(AddiCount);
 
-        memcpy(buffer + 4, &ques_count_net, sizeof(ques_count_net));
-        memcpy(buffer + 6, &answ_count_net, sizeof(answ_count_net));
-        memcpy(buffer + 8, &auth_count_net, sizeof(auth_count_net));
-        memcpy(buffer + 10, &addi_count_net, sizeof(addi_count_net));
+        memcpy(buffer.data() + 4, &ques_count_net, sizeof(ques_count_net));
+        memcpy(buffer.data() + 6, &answ_count_net, sizeof(answ_count_net));
+        memcpy(buffer.data() + 8, &auth_count_net, sizeof(auth_count_net));
+        memcpy(buffer.data() + 10, &addi_count_net, sizeof(addi_count_net));
+
+        return buffer;  // Devolvemos el buffer como un vector
     }
+
 
     void SetID(uint16_t id) { ID = id; }
     void SetQR(uint8_t qr) { QR = qr; }
