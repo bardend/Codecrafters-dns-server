@@ -29,7 +29,6 @@ class DnsMessage {
             Header.RecurAva = 0;
             Header.Reserved = 0;
             Header.RespCode = (Header.OpCode == 0 ? 0 : 0x04);
-
             Header.AnswCount = 1;
 
             ParseQuestion();
@@ -43,6 +42,8 @@ class DnsMessage {
             int CurrentPos = 0;
             while(QuestionCount--) {
                 auto Q = DnsQuestion(HeaderlessBytes, CurrentPos);
+                Q.Type = 1;
+                Q.Class = 1;
                 Questions.push_back(Q);
                 CurrentPos += Q.Len;
             }

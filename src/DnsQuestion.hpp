@@ -20,11 +20,12 @@ using namespace std;
 class DnsQuestion {
     private:
         DnsName DomainEncoding;
+        
+    public:
+        int Len;
         uint16_t Type;
         uint16_t Class;
 
-    public:
-        int Len;
         DnsQuestion(const uint8_t* buffer, int pos) 
                     : DomainEncoding(buffer, pos) {
             //This call at construct DomainEncoding with (buffer and pos) first
