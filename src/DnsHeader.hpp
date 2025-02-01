@@ -14,6 +14,7 @@ using namespace std;
 class DnsHeader {
 private:
     uint16_t ID;           // Identificador único
+public:
     uint8_t OpCode;        // Código de operación
     uint8_t AuthAns;       // Autoritative Answer flag
     uint8_t Trun;          // Truncation flag
@@ -21,8 +22,6 @@ private:
     uint8_t RecurAva;      // Recursion Available flag
     uint8_t Reserved;      // Reservado
     uint8_t RespCode;      // Código de respuesta
-
-public:
     uint16_t QuesCount;    // Número de preguntas
     uint16_t AnswCount;    // Número de respuestas
     uint16_t AuthCount;    // Número de registros de autoridad
@@ -47,8 +46,7 @@ public:
 
         RecurAva = (uint8_t)((buffer[3] >> 7) & 1);
         Reserved = (uint8_t)((buffer[3] & 0b01110000) >> 4);
-        //RespCode = (uint8_t)(buffer[3] & 0b00001111);
-        RespCode = (OpCode == 0 ? 0 : 0x04);
+        RespCode = (uint8_t)(buffer[3] & 0b00001111);
 
         QuesCount = (uint16_t)(buffer[4] << 8 | buffer[5]);
         AnswCount = (uint16_t)(buffer[6] << 8 | buffer[7]);
