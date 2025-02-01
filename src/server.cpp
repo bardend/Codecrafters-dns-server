@@ -60,30 +60,29 @@ int main() {
 
        buffer[bytesRead] = '\0';
 
-       // std::cout << "Received " << bytesRead << " bytes: " << buffer << std::endl;
-       //
-       // for(int i = 0; i < bytesRead; i++) 
-       //         std::cout << std::hex << (int)buffer[i] << " ";  // Imprime en hexadecimal
-       //
-       // std::cout << std::endl;
-       //
-       // std::cout << "============================" << std:: endl;
+       std::cout << "Received " << bytesRead << " bytes: " << buffer << std::endl;
+
+       for(int i = 0; i < bytesRead; i++) 
+               std::cout << std::hex << (int)buffer[i] << " ";  // Imprime en hexadecimal
+
+       std::cout << std::endl;
+
+       std::cout << "============================" << std:: endl;
        
 
        DnsMessage Response = DnsMessage(buffer);
 
        vector<uint8_t> response = Response.GetBytes();
 
-       // cout << "La longitud es :: " << (int)response.size() << endl;
-       //
-       // for(int i = 0; i < (int)response.size(); i++) {
-       //     cout << "?";
-       //     cout << hex << (int)response[i] << " ";
-       // }
-       //
-       // cout << endl;
-       //
-       // cout << "Terminacion de la respuesta " << endl;
+       cout << "La longitud es :: " << hex << (int)response.size() << endl;
+
+       for(int i = 0; i < (int)response.size(); i++) {
+           cout << hex << (int)response[i] << " ";
+       }
+
+       cout << endl;
+
+       cout << "Terminacion de la respuesta " << endl;
        
 
        if (sendto(udpSocket, response.data(), response.size(), 0, reinterpret_cast<struct sockaddr*>(&clientAddress), sizeof(clientAddress)) == -1) {

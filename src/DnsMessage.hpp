@@ -43,12 +43,13 @@ class DnsMessage {
         }
         
         void ParseAnswer(int SizeBeforeAnswer) {
-            const uint8_t* AnswerBytes = buffer + SizeBeforeAnswer;
 
             auto AnswerCount = Header.AnswCount;
             int CurrentPos = 0;
+
+            int ItrQuestion = 0;
             while(AnswerCount--) {
-                auto A = DnsRR(AnswerBytes, CurrentPos);
+                auto A = DnsRR(Questions[ItrQuestion++]);
                 Answers.push_back(A);
                 CurrentPos += A.Len;
             }
