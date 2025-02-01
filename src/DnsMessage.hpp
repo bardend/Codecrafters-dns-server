@@ -24,7 +24,6 @@ class DnsMessage {
                    : Header(buffer),
                      buffer(buffer) {
             Header.QR = 1;
-            Header.AnswCount = 1;
             ParseQuestion();
         }
 
