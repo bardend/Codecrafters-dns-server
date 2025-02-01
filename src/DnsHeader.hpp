@@ -47,7 +47,8 @@ public:
 
         RecurAva = (uint8_t)((buffer[3] >> 7) & 1);
         Reserved = (uint8_t)((buffer[3] & 0b01110000) >> 4);
-        RespCode = (uint8_t)(buffer[3] & 0b00001111);
+        //RespCode = (uint8_t)(buffer[3] & 0b00001111);
+        RespCode = (OpCode == 0 ? 0 : 0x04);
 
         QuesCount = (uint16_t)(buffer[4] << 8 | buffer[5]);
         AnswCount = (uint16_t)(buffer[6] << 8 | buffer[7]);
