@@ -30,6 +30,8 @@ class DnsMessage {
             Header.Reserved = 0;
             Header.RespCode = (Header.OpCode == 0 ? 0 : 0x04);
 
+            Header.AnswCount = 1;
+
             ParseQuestion();
         }
 
