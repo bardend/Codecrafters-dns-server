@@ -24,6 +24,7 @@ class DnsMessage {
                    : Header(buffer),
                      buffer(buffer) {
 
+            Header.QR = 1;
             ParseQuestion();
         }
 
