@@ -25,6 +25,7 @@ class DnsMessage {
                      buffer(buffer) {
 
             Header.QR = 1;
+            Header.AnswCount = Header.QuesCount;
             ParseQuestion();
         }
 
@@ -44,7 +45,7 @@ class DnsMessage {
         
         void ParseAnswer(int SizeBeforeAnswer) {
 
-            auto AnswerCount = Header.QuesCount;
+            auto AnswerCount = Header.AnswCount;
             int CurrentPos = 0;
 
             int ItrQuestion = 0;
