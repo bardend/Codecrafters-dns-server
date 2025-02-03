@@ -14,16 +14,29 @@ class DnsName {
 
         int Len;
         DnsName(const uint8_t* buffer, int pos) {
-            int i = pos, j;
 
             //Two pointers to linear complexity O(len(buffer))
-            while(buffer[i] != 0) {
+            auto GetDomain = [&](int &pos) {
                 string domain = "";
-                for(j = i + 1; j <= i + (int)buffer[i]; j++) {
-                    domain += char(buffer[j]);
+                int len = (int)buffer[pos];
+
+                while(len--) {
+                    pos += 1;
+                    domain += (char)(buffer[pos]);
                 }
-                Domains.push_back(domain);
-                i = j;
+                pos += 1;
+            };
+
+            int i = pos;
+            while(buffer[i] != 0) {
+
+                if((int)(buffer[i] & 0b11000000) == 192) { //compression
+                    int pointer = (int)((buffer[i] & 0b00111111) << 8 | buffer[i+1]);
+                    GetDomain(pointer);
+                    i += 2;
+                }
+                else  // un-compression
+                    GetDomain(i);
             }
             Len = i - pos + 1;
         }
