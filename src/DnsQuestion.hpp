@@ -36,7 +36,6 @@ class DnsQuestion {
             Len = DomainEncoding.Len + 4;
         }
 
-
         vector<uint8_t> GetBytes() {
             vector<uint8_t>RetBytes;
 

@@ -58,7 +58,7 @@ int main() {
            break;
        }
 
-       buffer[bytesRead] = '\0';
+       buffer[bytesRead] = 0x00;
 
        std::cout << "Received " << bytesRead << " bytes: " << buffer << std::endl;
 
@@ -95,55 +95,88 @@ int main() {
     return 0;
 }
 
-/*
-#include <iostream>
-#include <cstring>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <unistd.h>
+// #include <iostream>
+// #include <cstring>
+// #include <sys/socket.h>
+// #include <netinet/in.h>
+// #include <unistd.h>
+//
+// #include "DnsMessage.hpp"
+//
+// int main() {
+//     int cnt = 1;
+//    while (cnt--) {
+//        // Receive data
+//
+//
+//     uint8_t buffer[] = {
+//         0xDA, 0x5E, 0x01, 0x00, 0x00, 0x02, 0x00, 0x00,
+//         0x00, 0x00, 0x00, 0x00,
+//
+// 0x03, 0x61, 0x62, 0x63,
+// 0x11, 0x6C, 0x6F, 0x6E, 0x67, 0x61, 0x73, 0x73, 0x64, 0x6F, 0x6D, 0x61, 0x69, 0x6E, 0x6E, 0x61, 0x6D, 0x65, 
+// 0x03, 0x63, 0x6F, 0x6D, 0x00,
+//
+// 0x00, 0x01, 0x00, 0x01, 
+//
+//
+// 0x03, 0x64, 0x65, 0x66,
+// 0xC0, 0x10, 
+//
+// 0x00, 0x01, 0x00, 0x01
+//
+// };
+//
+// /*
+// 3 61 62 63 
+// 11 6c 6f 6e 67 61 73 73 64 6f 6d 61 69 6e 6e 61 6d 65 3 63 6f 6d 0
+// 0 1 0 1 
+// 3 64 65 66 
+// c0 10
+// 0 1 0 1 
+// ============================
+// int SizeQuestion :2
+// La longitud es :: 35
+// 3 61 62 63 
+// 11 6c 6f 6e 67 61 73 73 64 6f 6d 61 69 6e 6e 61 6d 65 3 63 6f 6d 0
+// 0 1 0 1 
+//
+// 3 64 65 66
+// 69 6e 
+// 0 1 0 1 
+// */
+//
+//
+//         int bytesRead = 53;
+//
+//
+//        for(int i = 0; i < bytesRead; i++) 
+//                std::cout << std::hex << (int)buffer[i] << " ";  // Imprime en hexadecimal
+//
+//        std::cout << std::endl;
+//
+//        std::cout << "============================" << std:: endl;
+//
+//
+//        DnsMessage Response = DnsMessage(buffer);
+//
+//        vector<uint8_t> response = Response.GetBytes();
+//
+//        cout << "La longitud es :: " << hex << (int)response.size() << endl;
+//
+//        for(int i = 0; i < (int)response.size(); i++) {
+//            cout << hex << (int)response[i] << " ";
+//        }
+//
+//        cout << endl;
+//
+//        cout << "Terminacion de la respuesta " << endl;
+//    }
+//
+//
+//     return 0;
+// }
+//
+//
+//
 
-#include "DnsMessage.hpp"
-
-int main() {
-    int cnt = 1;
-   while (cnt--) {
-       // Receive data
-       
-        uint8_t buffer[512] = {
-            0x17, 0x4F, 0x01, 0x00, 0x00, 0x01, 0x00, 0x00,
-            0x00, 0x00, 0x00, 0x00, 0x0C, 0x63, 0x6F, 0x64,
-            0x65, 0x63, 0x72, 0x61, 0x66, 0x74, 0x65, 0x72,
-            0x73, 0x02, 0x69, 0x6F, 0x00, 0x00, 0x01, 0x00,
-            0x01
-        };
-
-        int bytesRead = 33;
-
-
-       for(int i = 0; i < bytesRead; i++) 
-               std::cout << std::hex << (int)buffer[i] << " ";  // Imprime en hexadecimal
-
-       std::cout << std::endl;
-
-       std::cout << "============================" << std:: endl;
-       
-
-       DnsMessage Response = DnsMessage(buffer);
-
-       vector<uint8_t> response = Response.GetBytes();
-
-       cout << "La longitud es :: " << hex << (int)response.size() << endl;
-
-       for(int i = 0; i < (int)response.size(); i++) {
-           cout << hex << (int)response[i] << " ";
-       }
-
-       cout << endl;
-
-       cout << "Terminacion de la respuesta " << endl;
-   }
-
-
-    return 0;
-}
-*/

@@ -15,6 +15,7 @@ class DnsRR {
         uint16_t Length;
         vector<uint8_t>Data;
         DnsQuestion SolveQuestion;
+        
 
     public:
 

@@ -25,7 +25,6 @@ class DnsMessage {
                      buffer(buffer) {
 
             ParseQuestion();
-            Header.QuesCount = 1;
         }
 
         void ParseQuestion() {
@@ -37,7 +36,7 @@ class DnsMessage {
             while(QuestionCount--) {
                 auto Q = DnsQuestion(HeaderlessBytes, CurrentPos);
                 Questions.push_back(Q);
-                CurrentPos += Q.Len;
+                CurrentPos += (int)Q.Len;
             }
             ParseAnswer(CurrentPos + SizeHeader);
         }
@@ -58,8 +57,10 @@ class DnsMessage {
        vector<uint8_t> GetBytes() {
            vector<uint8_t> RetBytes = Header.GetBytes();
 
+           cout << "int SizeQuestion :" << (int)Questions.size() << endl;
            for(auto Question : Questions) 
                WriteToNetwork(RetBytes, Question.GetBytes());
+
 
            for(auto Answer : Answers)
                WriteToNetwork(RetBytes, Answer.GetBytes());
