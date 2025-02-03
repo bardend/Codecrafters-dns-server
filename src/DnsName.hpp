@@ -25,6 +25,8 @@ class DnsName {
                     domain += (char)(buffer[pos]);
                 }
                 pos += 1;
+                Domains.push_back(domain);
+
             };
 
             int i = pos;

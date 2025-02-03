@@ -25,6 +25,7 @@ class DnsMessage {
                      buffer(buffer) {
 
             ParseQuestion();
+            Header.QuesCount = 1;
         }
 
         void ParseQuestion() {
@@ -35,8 +36,6 @@ class DnsMessage {
             int CurrentPos = 0;
             while(QuestionCount--) {
                 auto Q = DnsQuestion(HeaderlessBytes, CurrentPos);
-                Q.Type = 1;
-                Q.Class = 1;
                 Questions.push_back(Q);
                 CurrentPos += Q.Len;
             }
@@ -45,7 +44,7 @@ class DnsMessage {
         
         void ParseAnswer(int SizeBeforeAnswer) {
 
-            auto AnswerCount = Header.AnswCount;
+            auto AnswerCount = Header.QuesCount;
             int CurrentPos = 0;
 
             int ItrQuestion = 0;
