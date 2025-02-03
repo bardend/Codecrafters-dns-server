@@ -26,6 +26,7 @@ class DnsMessage {
 
             Header.QR = 1;
             Header.AnswCount = Header.QuesCount;
+            Header.RespCode = (Header.OpCode == 0x00 ? 0x00 : 0x04);
             ParseQuestion();
         }
 
