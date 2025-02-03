@@ -23,13 +23,6 @@ class DnsMessage {
         DnsMessage(const uint8_t* buffer)
                    : Header(buffer),
                      buffer(buffer) {
-            Header.QR = 1;
-            Header.AuthAns = 0;
-            Header.Trun = 0;
-            Header.RecurAva = 0;
-            Header.Reserved = 0;
-            Header.RespCode = (Header.OpCode == 0 ? 0 : 0x04);
-            Header.AnswCount = 1;
 
             ParseQuestion();
         }
