@@ -15,7 +15,7 @@ class DnsName {
     public:
 
         int Len;
-        DnsName(const uint8_t* buffer, int pos) {
+        DnsName(const vector<uint8_t> &buffer, int pos) {
 
             //Two pointers to linear complexity O(len(buffer))
 

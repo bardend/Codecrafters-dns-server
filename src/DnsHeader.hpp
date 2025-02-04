@@ -34,7 +34,7 @@ public:
 
 
 
-    DnsHeader(const uint8_t* buffer) {
+    DnsHeader(const vector<uint8_t>&buffer) {
 
         ID = (uint16_t)(buffer[0] << 8 | buffer[1]);
 

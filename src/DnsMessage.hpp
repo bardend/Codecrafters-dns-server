@@ -13,26 +13,25 @@ using namespace std;
 
 class DnsMessage {
     private:
+        vector<uint8_t>buffer;
+
+    public:
         DnsHeader Header;
         vector<DnsQuestion> Questions;
         vector<DnsRR> Answers;
-        const uint8_t* buffer;
 
-    public:
-
-        DnsMessage(const uint8_t* buffer)
+        DnsMessage(vector<uint8_t> buffer)
                    : Header(buffer),
                      buffer(buffer) {
-
-            Header.QR = 1;
-            Header.AnswCount = Header.QuesCount;
-            Header.RespCode = (Header.OpCode == 0x00 ? 0x00 : 0x04);
             ParseQuestion();
         }
 
-        void ParseQuestion() {
-            const uint8_t* HeaderlessBytes = buffer + SizeHeader;
+        DnsMessage(DnsHeader header)
+                   : Header(header) {}
 
+        void ParseQuestion() {
+
+            vector<uint8_t> HeaderlessBytes(buffer.begin() + SizeHeader, buffer.end());
             auto QuestionCount = Header.QuesCount;
 
             int CurrentPos = 0;
@@ -41,7 +40,7 @@ class DnsMessage {
                 Questions.push_back(Q);
                 CurrentPos += (int)Q.Len;
             }
-            ParseAnswer(CurrentPos + SizeHeader);
+            //ParseAnswer(CurrentPos + SizeHeader);
         }
         
         void ParseAnswer(int SizeBeforeAnswer) {

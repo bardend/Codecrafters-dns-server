@@ -26,7 +26,7 @@ class DnsQuestion {
         uint16_t Type;
         uint16_t Class;
 
-        DnsQuestion(const uint8_t* buffer, int pos) 
+        DnsQuestion(const vector<uint8_t> &buffer, int pos) 
                     : DomainEncoding(buffer, pos) {
             //This call at construct DomainEncoding with (buffer and pos) first
             int CurrentPos = pos + DomainEncoding.Len;
