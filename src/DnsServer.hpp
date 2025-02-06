@@ -56,6 +56,7 @@ class DnsServer {
             bind();
 
             while(!ShouldStop) {
+                cout <<"===============================VAMOS A EMPEZAR============================="<< endl;
                 struct sockaddr_in clientAddress;
                 socklen_t clientAddrLen = sizeof(clientAddress);
 
@@ -91,6 +92,8 @@ class DnsServer {
                    cout << hex << (int)response[i] << " ";
                }
                cout << endl;
+
+               cout << "=========================TERMINAMOS ENVIAR==============================" << endl;
 
                if (sendto(udpSocket, response.data(), response.size(), 0, 
                    reinterpret_cast<struct sockaddr*>(&clientAddress), sizeof(clientAddress)) == -1) {
