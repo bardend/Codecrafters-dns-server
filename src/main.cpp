@@ -18,11 +18,14 @@ int main(int argc, char* argv[]) {
         
         std::string ip = arg.substr(0, pos);
         std::string port = arg.substr(pos + 1);
-        ForwardServer = IPEndPoint(ip, port);  // Inicialización posterior
+        ForwardServer = IPEndPoint(ip, stoi(port));  // Inicialización posterior
 
     }
 
+    cout << ForwardServer.Port << " " << ForwardServer.Address << endl;
+
     DnsServer server("127.0.0.1", 2053, ForwardServer);
+
     server.start();
     return 0;
 }
