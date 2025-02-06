@@ -7,6 +7,7 @@
 #include <vector>
 #include <type_traits>
 
+
 using namespace std;
 
 template<template<typename...> class Template, typename... Args>
@@ -37,4 +38,18 @@ void WriteToNetwork(vector<T1> &v, T2 value) {
             }
      }
 }
+
+#include <netinet/in.h>
+#include <string>
+
+struct IPEndPoint {
+    string Address;
+    int Port;
+
+    IPEndPoint() : Address(""), Port(0) {}  // Constructor por defecto
+
+    IPEndPoint(const string& addr, int port)
+        : Address(addr), Port(port) {}
+};
+
 #endif

@@ -6,6 +6,8 @@
 #include <unistd.h>
 #include <stdexcept>
 #include <string>
+
+
 #include "DnsMessage.hpp"
 
 using namespace std;
@@ -16,10 +18,11 @@ class DnsServer {
         std::string ipAddress;
         int port;
         bool ShouldStop = false;
+        IPEndPoint ForwardServer;
 
     public:
-        DnsServer(const std::string& ip, int serverPort) 
-                  : ipAddress(ip), port(serverPort) {
+        DnsServer(const std::string& ip, int serverPort, IPEndPoint forwardServer) 
+                  : ipAddress(ip), port(serverPort), ForwardServer(forwardServer) {
 
             udpSocket = socket(AF_INET, SOCK_DGRAM, 0);
             if (udpSocket == -1) {
@@ -29,6 +32,7 @@ class DnsServer {
             // Port reuse option
             int reuse = 1;
             setsockopt(udpSocket, SOL_SOCKET, SO_REUSEPORT, &reuse, sizeof(reuse));
+
         }
 
         void bind() {
@@ -46,9 +50,11 @@ class DnsServer {
 
             std::cout << "Server listening on " << ipAddress << ":" << port << std::endl;
         }
+
         void start() {
 
             bind();
+
             while(!ShouldStop) {
                 struct sockaddr_in clientAddress;
                 socklen_t clientAddrLen = sizeof(clientAddress);
@@ -57,6 +63,7 @@ class DnsServer {
 
                 int bytesRead = recvfrom(udpSocket, buffer.data(), buffer.size(), 0, 
                                 reinterpret_cast<struct sockaddr*>(&clientAddress), &clientAddrLen);
+
                 if (bytesRead == -1) {
                     std::cerr << "Receive error" << std::endl;
                     continue;
@@ -64,16 +71,21 @@ class DnsServer {
 
                 buffer[bytesRead] = 0x00;
 
+                cout << "Puerto before readBytes : " << ForwardServer.Port << endl;
 
+                cout << "Mensajes desde el mi localhost dig" << endl;
                for(int i = 0; i < bytesRead; i++) 
-                       std::cout << std::hex << (int)buffer[i] << " ";  // Imprime en hexadecimal
+                       cout << hex << (int)buffer[i] << " ";  // Imprime en hexadecimal
 
-               std::cout << std::endl;
-               std::cout << "============================" << std:: endl;
+               cout << endl;
 
-               DnsMessage RequestMessage = DnsMessage(buffer);
+               cout << "Puerto after readBytes: " << ForwardServer.Port << endl;
+
+               DnsMessage RequestMessage = DnsMessage(buffer, 0);
+
                vector<uint8_t> response = ProcessRequest(RequestMessage).GetBytes();
                cout << "La longitud es :: " << hex << (int)response.size() << endl;
+
 
                for(int i = 0; i < (int)response.size(); i++) {
                    cout << hex << (int)response[i] << " ";
@@ -90,7 +102,46 @@ class DnsServer {
             }
         }
 
+
+        DnsMessage ForwardRequest(DnsMessage Request) {
+
+            cout << "Puerto after readBytes: " << ForwardServer.Port << endl;
+            int sock = socket(AF_INET, SOCK_DGRAM, 0); // ⟶ new UdpClient()
+            sockaddr_in forwardServer{};
+            forwardServer.sin_family = AF_INET;
+            forwardServer.sin_port = htons(ForwardServer.Port); // Puerto del servidor
+            forwardServer.sin_addr.s_addr = inet_addr(ForwardServer.Address.c_str()); //string a const char*
+
+            if (connect(sock, (struct sockaddr*)&forwardServer, sizeof(forwardServer)) < 0) {
+                perror("Error en connect");
+                close(sock);
+            } // Client.Connect(ForwardServer)
+              //
+
+            vector<uint8_t> Query = Request.GetBytes();
+            send(sock, Query.data(), Query.size(), 0);
+
+            vector<uint8_t> buffer(1024); // Espacio para recibir datos
+            ssize_t bytesReceived = recv(sock, buffer.data(), buffer.size(), 0);
+
+            cout << "Mensaje desde mismo google:" << endl;
+            for(int i = 0; i < bytesReceived; i++)
+                cout << hex << (int)buffer[i] << " ";  // Imprime en hexadecimal
+            cout << endl;
+
+            DnsMessage ParsedResponse = DnsMessage(buffer, 1);
+            return ParsedResponse;
+        }
+
         DnsMessage ProcessRequest(DnsMessage Request) {
+
+            vector<uint8_t>q = Request.GetBytes();
+            cout << "Mensaje setteado como Request" << endl;
+            for(int i = 0; i < (int)q.size(); i++) 
+                cout << hex << (int)q[i] << " ";  // Imprime en hexadecimal
+            cout << endl;
+
+
             DnsMessage Response(Request.Header);
 
             Response.Header.QR = 1;
@@ -98,10 +149,16 @@ class DnsServer {
             Response.Header.RespCode = (Response.Header.OpCode == 0x00 ? 0x00 : 0x04);
 
             for(auto Q: Request.Questions) {
-                DnsRR A = DnsRR(Q);
-                Response.Answers.push_back(A);
-                Response.Header.AnswCount += 1;
+                //DnsRR A = DnsRR(Q);
+                DnsMessage M = ForwardRequest(Request);
+
+                //cout << "Cout la longitud es: " << (int)M.Answers.size() << endl;
+
+                Response.Answers.push_back(M.Answers[0]);
                 Response.Questions.push_back(Q);
+                Response.Header.AnswCount += 1;
+                cout << "CUANTAS VECES" << endl;
+                break;
             }
             return Response;
         }
