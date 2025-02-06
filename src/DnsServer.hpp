@@ -84,17 +84,14 @@ class DnsServer {
                DnsMessage RequestMessage = DnsMessage(buffer, 0);
 
                vector<uint8_t> response = ProcessRequest(RequestMessage).GetBytes();
-               cout << "La longitud es :: " << hex << (int)response.size() << endl;
 
 
+               cout << "Envio final al servidor de codecrafeters" << endl;
                for(int i = 0; i < (int)response.size(); i++) {
                    cout << hex << (int)response[i] << " ";
                }
                cout << endl;
 
-               cout << "Vamos a ver el ProcessRequest :) " << endl;
-
-               cout << "Terminacion de la respuesta " << endl;
                if (sendto(udpSocket, response.data(), response.size(), 0, 
                    reinterpret_cast<struct sockaddr*>(&clientAddress), sizeof(clientAddress)) == -1) {
                    perror("Failed to send response");
@@ -129,7 +126,16 @@ class DnsServer {
                 cout << hex << (int)buffer[i] << " ";  // Imprime en hexadecimal
             cout << endl;
 
+            cout << "Vamos a parsear el mensaje de google" << endl;
             DnsMessage ParsedResponse = DnsMessage(buffer, 1);
+
+            vector<uint8_t>xd = ParsedResponse.GetBytes();
+            for(int i = 0; i < (int)xd.size(); i++) 
+                cout << hex << (int)xd[i] << " ";
+
+            cout << endl;
+
+            cout << "Terminamos de parsear el mensaje de google " << endl;
             return ParsedResponse;
         }
 
@@ -148,18 +154,10 @@ class DnsServer {
             Response.Header.AnswCount = 0;
             Response.Header.RespCode = (Response.Header.OpCode == 0x00 ? 0x00 : 0x04);
 
-            for(auto Q: Request.Questions) {
-                //DnsRR A = DnsRR(Q);
-                DnsMessage M = ForwardRequest(Request);
-
-                //cout << "Cout la longitud es: " << (int)M.Answers.size() << endl;
-
-                Response.Answers.push_back(M.Answers[0]);
-                Response.Questions.push_back(Q);
-                Response.Header.AnswCount += 1;
-                cout << "CUANTAS VECES" << endl;
-                break;
-            }
+            DnsMessage M = ForwardRequest(Request);
+            Response.Answers.push_back(M.Answers[0]);
+            Response.Questions.push_back(Request.Questions[0]);
+            Response.Header.AnswCount += 1;
             return Response;
         }
 

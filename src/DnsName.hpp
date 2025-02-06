@@ -95,7 +95,6 @@ class DnsName {
             if((int)(buffer[i] & 0b11000000) == 192) { //compression
                 cout << "Compression:" << endl;
                 int pointer = (int)(((buffer[i] & 0b00111111) << 8) | buffer[i+1]);
-                pointer -= SizeHeader;
                 poin = buffer[i+1];
                 Uncompress = false;
                 GetDomain(pointer, 1, GetDomain);
