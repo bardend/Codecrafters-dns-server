@@ -33,8 +33,13 @@ class DnsRR {
                 Data[i] = 0x08;
         }
 
+        GetBytesStrategy* GetBehavior(const vector<uint8_t> &buffer, int pos) {
+               return (buffer[pos] == FlagCompress ? static_cast<GetBytesStrategy*>(new GetServerBytes) : 
+                                                     static_cast<GetBytesStrategy*>(new GetMockBytes));
+        }
+
         DnsRR(const vector<uint8_t> &buffer, int pos)
-              :DomainEncoding(buffer, pos, new GetServerBytes), SolveQuestion() {
+              :DomainEncoding(buffer, pos, GetBehavior(buffer, pos)), SolveQuestion() {
 
             int CurrentPos = pos + DomainEncoding.Len;
             Type = (uint16_t)(buffer[CurrentPos] << 8 | buffer[CurrentPos + 1]);
