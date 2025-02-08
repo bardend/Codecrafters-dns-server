@@ -15,7 +15,7 @@ class DnsServer {
     private:
         int udpSocket;
         struct sockaddr_in serverAddress;
-        std::string ipAddress;
+        string ipAddress;
         int port;
         bool ShouldStop = false;
         IPEndPoint ForwardServer;
@@ -69,6 +69,20 @@ class DnsServer {
                     std::cerr << "Receive error" << std::endl;
                     continue;
                 }
+                                                              
+               // buffer = {
+               //          //Heder
+               //          0xBD, 0x1D, 0x01, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
+               //          //Question1
+               //          0x03, 0x61, 0x62, 0x63, 0x11, 0x6C, 0x6F, 0x6E, 0x67, 0x61, 0x73, 0x73, 
+               //          0x64, 0x6F, 0x6D, 0x61, 0x69, 0x6E, 0x6E, 0x61, 0x6D, 0x65, 0x03, 0x63, 
+               //          0x6F, 0x6D, 0x00, 0x00, 0x01, 0x00, 0x01,
+               //
+               //          //Question2
+               //          0x03, 0x64, 0x65, 0x66, 0xC0, 0x10, 0x00, 0x01, 0x00, 0x01
+               //      };
+               // bytesRead =  53;
+               //
 
                 buffer[bytesRead] = 0x00;
 
@@ -103,6 +117,7 @@ class DnsServer {
         }
 
 
+        /* This server respond only one Question */
         DnsMessage ForwardRequest(DnsMessage Request) {
 
             cout << "Puerto after readBytes: " << ForwardServer.Port << endl;
@@ -118,7 +133,12 @@ class DnsServer {
             } // Client.Connect(ForwardServer)
               //
 
+            cout << "1 mensaje enviado al servidor; )" << endl;
             vector<uint8_t> Query = Request.GetBytes();
+            for(int i = 0; i < (int)Query.size(); i++) 
+                cout << hex << (int)Query[i] << " ";  // Imprime en hexadecimal
+            cout << endl;
+            
             send(sock, Query.data(), Query.size(), 0);
 
             vector<uint8_t> buffer(1024); // Espacio para recibir datos
@@ -135,25 +155,30 @@ class DnsServer {
         bytesReceived = 68;
         */
 
-            cout << "Mensaje desde mismo google:" << endl;
+            cout << "Mensaje recivido desde servidor codecrafeters:" << endl;
             for(int i = 0; i < bytesReceived; i++)
                 cout << hex << (int)buffer[i] << " ";  // Imprime en hexadecimal
             cout << endl;
 
-            cout << "Vamos a parsear el mensaje de google" << endl;
-            DnsMessage ParsedResponse = DnsMessage(buffer, 1);
+            cout << "Vamos a parsear el mensaje de codecrafeters" << endl;
+            DnsMessage ResponseGoogle = DnsMessage(buffer, 1);
 
-            vector<uint8_t>xd = ParsedResponse.GetBytes();
+            cout << "El numero de questions codecrafeters parceado: " << ResponseGoogle.Header.QuesCount << endl;
+
+            vector<uint8_t>xd = ResponseGoogle.GetBytes();
             for(int i = 0; i < (int)xd.size(); i++) 
                 cout << hex << (int)xd[i] << " ";
 
             cout << endl;
 
-            cout << "Terminamos de parsear el mensaje de google " << endl;
-            return ParsedResponse;
+            cout << "Terminamos de parsear el mensaje de codecrafeters " << endl;
+            return ResponseGoogle;
         }
 
+
         DnsMessage ProcessRequest(DnsMessage Request) {
+
+            cout << "El numero de questions essssssssss: " << Request.Header.QuesCount << endl;
 
             vector<uint8_t>q = Request.GetBytes();
             cout << "Mensaje setteado como Request" << endl;
@@ -162,17 +187,30 @@ class DnsServer {
             cout << endl;
 
 
-            DnsMessage Response(Request.Header);
+            DnsMessage ResponseMessage(Request.Header);
+            
+            int sum_pos = 0;
+            for(auto Q: Request.Questions) {
+                // Set the header
+                DnsMessage Split(Request.Header);
+                Split.Header.QR = 1;
+                Split.Header.AnswCount = 0;
+                Split.Header.RespCode = (Split.Header.OpCode == 0x00 ? 0x00 : 0x04);
+                Split.Header.QuesCount = 1;
+                // Set Question
+                Split.Questions.push_back(Q);
+                // Send server codecrafeters
+                cout << "Enviamos al servidor privado" << endl;
+                DnsMessage SplitResponse = ForwardRequest(Split);
 
-            Response.Header.QR = 1;
-            Response.Header.AnswCount = 0;
-            Response.Header.RespCode = (Response.Header.OpCode == 0x00 ? 0x00 : 0x04);
-
-            DnsMessage M = ForwardRequest(Request);
-            Response.Answers.push_back(M.Answers[0]);
-            Response.Questions.push_back(Request.Questions[0]);
-            Response.Header.AnswCount += 1;
-            return Response;
+                ResponseMessage.Questions.push_back(SplitResponse.Questions[0]);
+                ResponseMessage.Answers.push_back(SplitResponse.Answers[0]);
+                ResponseMessage.Answers.back().DomainEncoding.SetSubtracPos(sum_pos);
+                 //fix the position
+                sum_pos += SplitResponse.Questions[0].Len;
+                sum_pos += SplitResponse.Answers[0].Len;
+            }
+            return ResponseMessage;
         }
 
         ~DnsServer() {

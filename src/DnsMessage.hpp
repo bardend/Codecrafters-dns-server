@@ -11,6 +11,7 @@
 
 using namespace std;
 
+
 class DnsMessage {
     private:
         vector<uint8_t>buffer;
@@ -35,6 +36,7 @@ class DnsMessage {
             auto QuestionCount = Header.QuesCount;
 
             int CurrentPos = 12;
+            cout << "Tenemos cuantas Questions : " << QuestionCount << endl;
             while(QuestionCount--) {
                 auto Q = DnsQuestion(buffer, CurrentPos);
                 Questions.push_back(Q);

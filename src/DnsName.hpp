@@ -5,60 +5,83 @@
 #include <string>
 #include <arpa/inet.h>  // Para htons()
 #include <functional>
+#include <netinet/in.h>
+#include <string>
+
                         //
 using namespace std;
 
-
-class GetBytesStrategy {
-    public :
-        virtual ~GetBytesStrategy() = default;
-        virtual vector<uint8_t> GetBytes(vector<string> Domains) = 0;
-        virtual vector<uint8_t> GetBytes(uint8_t pointer) = 0;
+const uint8_t NoCompress = 0x00;
+struct StructDomain {
+    vector<string>names;
+    vector<uint8_t>pointers;
+    StructDomain(){}
+    void Add(string name, uint8_t pointer = NoCompress) {
+        names.push_back(name);
+        pointers.push_back(pointer);
+    }
 };
 
-class GetMockBytes : public GetBytesStrategy {
+class CompressStrategy {
     public :
-        vector<uint8_t>GetBytes(vector<string> Domains) override {
+        virtual ~CompressStrategy() = default;
+        virtual vector<uint8_t> GetBytes(StructDomain Domains, int extra) = 0;
+};
+
+void AddName(vector<uint8_t>&s, string x) {
+    s.push_back((int)x.size());
+    for(int ii = 0; ii < (int)x.size(); ii++)
+        s.push_back(x[ii]);
+}
+
+class Uncompress : public CompressStrategy {
+    public :
+        vector<uint8_t>GetBytes(StructDomain Domains, int extra) override {
             vector<uint8_t>RetBytes;
-            for(auto cd: Domains) {
-                RetBytes.push_back((int)cd.size());
-                for(int ii = 0; ii < (int)cd.size(); ii++) 
-                    RetBytes.push_back(cd[ii]);
-            }
+            vector<string> names = Domains.names;
+            for(auto cd: names) 
+                AddName(RetBytes, cd);
+
             RetBytes.push_back(0);
             return RetBytes;
         }
-        vector<uint8_t> GetBytes(uint8_t pointer) override { return vector<uint8_t>();}
+ };
 
-};
 const uint8_t FlagCompress = 0xC0; // MEJORAR
-                                
-class GetServerBytes: public GetBytesStrategy {
-    public :
-        vector<uint8_t> GetBytes(vector<string> Domains) override {return vector<uint8_t>();}
 
-        vector<uint8_t>GetBytes(uint8_t pointer) override {
+class OnlyParse : public CompressStrategy {
+    public :
+        vector<uint8_t>GetBytes(StructDomain Domains, int extra) override {
             vector<uint8_t>RetBytes;
-            RetBytes.push_back(FlagCompress);
-            RetBytes.push_back(pointer);
+            vector<string> names = Domains.names; vector<uint8_t> pointers = Domains.pointers;
+            for(int i = 0; i < (int)names.size(); i++) {
+                if(pointers[i] == NoCompress)  { //This is normal
+                    AddName(RetBytes, names[i]);
+                }
+                else  { // This is compression and final is here for domain names
+                    RetBytes.push_back(FlagCompress);
+                    RetBytes.push_back(pointers[i]-extra);
+                    break; // Ensure 0xC0 pointer is the final of the shadow(Question or Answer)
+                }
+            }
             return RetBytes;
         }
-
 };
 
+        
 class DnsName {
     private:
-        vector<string>Domains;
-        GetBytesStrategy* strategy;
-        bool Compress = true;
-        uint8_t poin;
-
+        StructDomain Collector;
+        CompressStrategy* strategy;
+        int extra = 0;
     public:
 
         int Len;
         DnsName() {}
-        DnsName(const vector<uint8_t> &buffer, int pos, GetBytesStrategy* strategy)
+        DnsName(const vector<uint8_t> &buffer, int pos, CompressStrategy* strategy)
                 :strategy(strategy){
+
+            uint8_t poin;
 
             //Two pointers to linear complexity O(len(buffer))
             cout << "The position init Name: " << (int)pos << endl;
@@ -70,20 +93,24 @@ class DnsName {
 
                         if((int)(buffer[pos] & 0b11000000) == 192) {
                             int pointer = (int)(((buffer[pos] & 0b00111111) << 8) | buffer[pos+1]);
-                            pointer -= SizeHeader;
+                            poin = pointer;
                             GetDomain(pointer, 1, GetDomain);
                             pos += 2;
                             return;
                         }
                     }
 
-                    string domain = "";
+                    string name = "";
                     int len = (int)buffer[pos];
                     while(len--) {
                         pos += 1;
-                        domain += (char)(buffer[pos]);
+                        name += (char)(buffer[pos]);
                     }
-                    Domains.push_back(domain);
+
+                    if(!IsCompress)
+                        Collector.Add(name); //not pointer
+                    else 
+                        Collector.Add(name, poin);
                     pos += 1;
                 }
                 pos += 1;
@@ -91,30 +118,16 @@ class DnsName {
             };
            
             int i = pos;
-
-            if((int)(buffer[i] & 0b11000000) == 192) { //compression
-                cout << "Compression:" << endl;
-                int pointer = (int)(((buffer[i] & 0b00111111) << 8) | buffer[i+1]);
-                pointer -= SizeHeader;
-                poin = buffer[i+1];
-                Compress = false;
-                GetDomain(pointer, 1, GetDomain);
-                i += 2;
-            }
-            else  // un-compression
-                GetDomain(i, 0, GetDomain);
+            GetDomain(i, 0, GetDomain);
 
             Len = i - pos;
-
-            cout << "**********************" << endl;
-            for(auto cd: Domains) 
-                cout << cd << endl;
-            cout << endl;
         }
 
         vector<uint8_t> GetBytes() {
-            if(Compress) 
-                return strategy->GetBytes(Domains);
-            return strategy->GetBytes(poin);
+            return strategy->GetBytes(Collector, extra);
+        }
+
+        void SetSubtracPos(int xtra) {
+            extra = xtra;
         }
 };

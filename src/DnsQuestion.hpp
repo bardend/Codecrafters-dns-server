@@ -27,7 +27,7 @@ class DnsQuestion {
         uint16_t Class;
 
         DnsQuestion(const vector<uint8_t> &buffer, int pos) 
-                    : DomainEncoding(buffer, pos, new GetMockBytes) {
+                    : DomainEncoding(buffer, pos, new Uncompress) {
             //This call at construct DomainEncoding with (buffer and pos) first
             int CurrentPos = pos + DomainEncoding.Len;
 

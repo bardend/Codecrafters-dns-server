@@ -17,11 +17,11 @@ class DnsRR {
         uint16_t Length;
         vector<uint8_t>Data;
         DnsQuestion SolveQuestion;
-        DnsName DomainEncoding;
         bool IsMock = false;
 
     public:
 
+        DnsName DomainEncoding;
         int Len;
         DnsRR(DnsQuestion  q)
               : SolveQuestion(q), DomainEncoding() {
@@ -33,13 +33,13 @@ class DnsRR {
                 Data[i] = 0x08;
         }
 
-        GetBytesStrategy* GetBehavior(const vector<uint8_t> &buffer, int pos) {
-               return (buffer[pos] == FlagCompress ? static_cast<GetBytesStrategy*>(new GetServerBytes) : 
-                                                     static_cast<GetBytesStrategy*>(new GetMockBytes));
+        CompressStrategy* GetBehavior(const vector<uint8_t> &buffer, int pos) {
+               return (buffer[pos] == FlagCompress ? static_cast<CompressStrategy*>(new OnlyParse) : 
+                                                     static_cast<CompressStrategy*>(new Uncompress));
         }
 
         DnsRR(const vector<uint8_t> &buffer, int pos)
-              :DomainEncoding(buffer, pos, GetBehavior(buffer, pos)), SolveQuestion() {
+              :DomainEncoding(buffer, pos, new OnlyParse), SolveQuestion() {
 
             int CurrentPos = pos + DomainEncoding.Len;
             Type = (uint16_t)(buffer[CurrentPos] << 8 | buffer[CurrentPos + 1]);
