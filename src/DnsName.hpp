@@ -60,7 +60,7 @@ class OnlyParse : public CompressStrategy {
                 }
                 else  { // This is compression and final is here for domain names
                     RetBytes.push_back(FlagCompress);
-                    RetBytes.push_back(pointers[i]-extra);
+                    RetBytes.push_back(pointers[i]+extra);
                     break; // Ensure 0xC0 pointer is the final of the shadow(Question or Answer)
                 }
             }
@@ -128,7 +128,7 @@ class DnsName {
             return strategy->GetBytes(Collector, extra);
         }
 
-        void SetSubtracPos(int xtra) {
+        void SetAddPos(int xtra) {
             extra = xtra;
         }
 };
