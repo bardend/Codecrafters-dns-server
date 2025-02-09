@@ -205,7 +205,11 @@ class DnsServer {
 
                 ResponseMessage.Questions.push_back(SplitResponse.Questions[0]);
                 ResponseMessage.Answers.push_back(SplitResponse.Answers[0]);
-                ResponseMessage.Answers.back().DomainEncoding.SetSubtracPos(sum_pos);
+
+
+
+                if(ResponseMessage.Answers.back().DomainEncoding.WasCompress)
+                    ResponseMessage.Answers.back().DomainEncoding.SetSubtracPos(sum_pos);
                  //fix the position
                 sum_pos += SplitResponse.Questions[0].Len;
                 sum_pos += SplitResponse.Answers[0].Len;

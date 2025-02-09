@@ -75,7 +75,7 @@ class DnsName {
         CompressStrategy* strategy;
         int extra = 0;
     public:
-
+        bool WasCompress = 0;
         int Len;
         DnsName() {}
         DnsName(const vector<uint8_t> &buffer, int pos, CompressStrategy* strategy)
@@ -92,6 +92,7 @@ class DnsName {
                     if(!IsCompress) { //can be compress
 
                         if((int)(buffer[pos] & 0b11000000) == 192) {
+                            WasCompress = 1;
                             int pointer = (int)(((buffer[pos] & 0b00111111) << 8) | buffer[pos+1]);
                             poin = pointer;
                             GetDomain(pointer, 1, GetDomain);
