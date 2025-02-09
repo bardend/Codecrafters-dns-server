@@ -54,6 +54,7 @@ class OnlyParse : public CompressStrategy {
         vector<uint8_t>GetBytes(StructDomain Domains, int extra) override {
             vector<uint8_t>RetBytes;
             vector<string> names = Domains.names; vector<uint8_t> pointers = Domains.pointers;
+            bool IsCompress = false;
             for(int i = 0; i < (int)names.size(); i++) {
                 if(pointers[i] == NoCompress)  { //This is normal
                     AddName(RetBytes, names[i]);
@@ -61,9 +62,12 @@ class OnlyParse : public CompressStrategy {
                 else  { // This is compression and final is here for domain names
                     RetBytes.push_back(FlagCompress);
                     RetBytes.push_back(pointers[i]+extra);
+                    IsCompress = true;
                     break; // Ensure 0xC0 pointer is the final of the shadow(Question or Answer)
                 }
             }
+            if(!IsCompress) 
+                RetBytes.push_back(0);
             return RetBytes;
         }
 };
