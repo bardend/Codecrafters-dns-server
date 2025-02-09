@@ -167,12 +167,14 @@ class DnsServer {
                 Temporal.Questions.push_back(Q);
                 DnsMessage SplitResponse = ForwardRequest(Temporal);
 
-
-                RetResponse.Questions.push_back(SplitResponse.Questions.back());
-                RetResponse.Answers.push_back(SplitResponse.Answers.back());
-                RetResponse.Header.AnswCount += 1;
-                RetResponse.Header.QuesCount += 1;
-
+                if((int)SplitResponse.Questions.size() > 0 ) { //If there's a Question -> there's a Answer
+                    RetResponse.Questions.push_back(SplitResponse.Questions.back());
+                    RetResponse.Header.AnswCount += 1;
+                }
+                if((int)SplitResponse.Answers.size() > 0) {
+                    RetResponse.Answers.push_back(SplitResponse.Answers.back());
+                    RetResponse.Header.QuesCount += 1;
+                }
                 RetResponse.Header.AuthAns = SplitResponse.Header.AuthAns;
                 RetResponse.Header.RecurAva = SplitResponse.Header.RecurAva;
                 RetResponse.Header.OpCode = SplitResponse.Header.OpCode;
