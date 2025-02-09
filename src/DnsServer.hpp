@@ -56,6 +56,11 @@ class DnsServer {
                 ssize_t bytesRead = recvfrom(LocalSocket, buffer.data(), buffer.size(), 0, 
                                 reinterpret_cast<struct sockaddr*>(&LocalClient), &LocalClientLen);
 
+                cout << "Request" << endl;
+                for(int i = 0; i < bytesRead; i++)
+                    cout << hex << (int)buffer[i] << " ";
+                cout << endl;
+                
                 if (bytesRead == -1) {
                     std::cerr << "Receive error" << std::endl;
                     continue;
