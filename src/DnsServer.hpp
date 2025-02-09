@@ -56,10 +56,20 @@ class DnsServer {
                 ssize_t bytesRead = recvfrom(LocalSocket, buffer.data(), buffer.size(), 0, 
                                 reinterpret_cast<struct sockaddr*>(&LocalClient), &LocalClientLen);
 
+                vector<uint8_t> data = {
+    0x32, 0xEB, 0x09, 0x00, 0x00, 0x01, 0x00, 0x00, 
+    0x00, 0x00, 0x00, 0x00, 0x0C, 0x63, 0x6F, 0x64, 
+    0x65, 0x63, 0x72, 0x61, 0x66, 0x74, 0x65, 0x72, 
+    0x73, 0x02, 0x69, 0x6F, 0x00, 0x00, 0x01, 0x00, 
+    0x01
+};
+            
+                copy(data.begin(), data.end(), buffer.begin());
                 cout << "Request" << endl;
                 for(int i = 0; i < bytesRead; i++)
                     cout << hex << (int)buffer[i] << " ";
                 cout << endl;
+
                 
                 if (bytesRead == -1) {
                     std::cerr << "Receive error" << std::endl;
@@ -98,6 +108,13 @@ class DnsServer {
             ConfigForward.sin_port = htons(ForwardServer.Port); 
 
             vector<uint8_t> Query = Request.GetBytes();
+
+            cout << "Que se enviar a codecrafeters: " << endl;
+            for(int i = 0; i < (int)Query.size(); i++) 
+                cout << hex << int(Query[i]) << " ";
+
+            cout << endl;
+
             ssize_t bytesSent = sendto(ForwardSocket, Query.data(), Query.size(), 0,
                                 reinterpret_cast<struct sockaddr*>(&ConfigForward), sizeof(ConfigForward));
 
@@ -114,7 +131,6 @@ class DnsServer {
             ssize_t bytesRead = recvfrom(ForwardSocket, buffer.data(), buffer.size(), 0, 
                             reinterpret_cast<struct sockaddr*>(&CurrentAddr), &CurrentAddrLen);
 
-            cout << "Porque no recivo nada :(" << endl;
 
             if (bytesRead < 0) {
                 cout << "Error recibiendo datos: " << strerror(errno) << endl;
@@ -134,6 +150,12 @@ class DnsServer {
 
         DnsMessage ProcessRequest(DnsMessage Request) {
 
+
+
+//Authoritative Answer  codecrafeters 0 - me 1
+
+//Recursion Available en el segundo codecrafeters 1 - me 0
+//
             DnsMessage RetResponse = DnsMessage(Request.Header);
             RetResponse.Header.QR = 1;
             RetResponse.Header.QuesCount = 0;
@@ -145,17 +167,24 @@ class DnsServer {
                 Temporal.Questions.push_back(Q);
                 DnsMessage SplitResponse = ForwardRequest(Temporal);
 
+
                 RetResponse.Questions.push_back(SplitResponse.Questions.back());
                 RetResponse.Answers.push_back(SplitResponse.Answers.back());
                 RetResponse.Header.AnswCount += 1;
                 RetResponse.Header.QuesCount += 1;
+
+                RetResponse.Header.AuthAns = SplitResponse.Header.AuthAns;
+                RetResponse.Header.RecurAva = SplitResponse.Header.RecurAva;
+                RetResponse.Header.OpCode = SplitResponse.Header.OpCode;
+
+
 
                 // if(RetResponse.Answers.back().DomainEncoding.WasCompress) {
                 //     RetResponse.Answers.back().DomainEncoding.SetAddPos(sum_pos);
                 //     cout << "sumamos" << endl;
                 // }
                 //
-                // sum_pos += SplitResponse.Questions.back().Len;
+
                 // sum_pos += SplitResponse.Answers.back().Len;
 
             }

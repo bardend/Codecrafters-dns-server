@@ -1,0 +1,13 @@
+
+Despues del Header
+Mensaje recivido desde servidor codecrafeters:
+//Respuesta del Codecrafter
+81 80 
+_ _ _ _ _ _ _ 1 
+
+
+//Mi respuesta : )
+
+89 0  
+_ _ _ _ 1 _ _ 1
+
