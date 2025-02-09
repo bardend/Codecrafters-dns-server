@@ -178,15 +178,7 @@ class DnsServer {
                 RetResponse.Header.AuthAns = SplitResponse.Header.AuthAns;
                 RetResponse.Header.RecurAva = SplitResponse.Header.RecurAva;
                 RetResponse.Header.OpCode = SplitResponse.Header.OpCode;
-
-                // if(RetResponse.Answers.back().DomainEncoding.WasCompress) {
-                //     RetResponse.Answers.back().DomainEncoding.SetAddPos(sum_pos);
-                //     cout << "sumamos" << endl;
-                // }
-                //
-
-                // sum_pos += SplitResponse.Answers.back().Len;
-
+                RetResponse.Header.RespCode =  SplitResponse.Header.RespCode;
             }
 
             return RetResponse;
