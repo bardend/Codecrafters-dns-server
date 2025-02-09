@@ -56,15 +56,15 @@ class DnsServer {
                 ssize_t bytesRead = recvfrom(LocalSocket, buffer.data(), buffer.size(), 0, 
                                 reinterpret_cast<struct sockaddr*>(&LocalClient), &LocalClientLen);
 
-                vector<uint8_t> data = {
-    0x32, 0xEB, 0x09, 0x00, 0x00, 0x01, 0x00, 0x00, 
-    0x00, 0x00, 0x00, 0x00, 0x0C, 0x63, 0x6F, 0x64, 
-    0x65, 0x63, 0x72, 0x61, 0x66, 0x74, 0x65, 0x72, 
-    0x73, 0x02, 0x69, 0x6F, 0x00, 0x00, 0x01, 0x00, 
-    0x01
-};
-            
-                copy(data.begin(), data.end(), buffer.begin());
+//                 vector<uint8_t> data = {
+//     0x32, 0xEB, 0x09, 0x00, 0x00, 0x01, 0x00, 0x00, 
+//     0x00, 0x00, 0x00, 0x00, 0x0C, 0x63, 0x6F, 0x64, 
+//     0x65, 0x63, 0x72, 0x61, 0x66, 0x74, 0x65, 0x72, 
+//     0x73, 0x02, 0x69, 0x6F, 0x00, 0x00, 0x01, 0x00, 
+//     0x01
+// };
+//
+//                 copy(data.begin(), data.end(), buffer.begin());
                 cout << "Request" << endl;
                 for(int i = 0; i < bytesRead; i++)
                     cout << hex << (int)buffer[i] << " ";
@@ -176,8 +176,6 @@ class DnsServer {
                 RetResponse.Header.AuthAns = SplitResponse.Header.AuthAns;
                 RetResponse.Header.RecurAva = SplitResponse.Header.RecurAva;
                 RetResponse.Header.OpCode = SplitResponse.Header.OpCode;
-
-
 
                 // if(RetResponse.Answers.back().DomainEncoding.WasCompress) {
                 //     RetResponse.Answers.back().DomainEncoding.SetAddPos(sum_pos);
