@@ -22,18 +22,13 @@ class DnsServer {
 
     public:
         DnsServer(const std::string& ip, int serverPort, IPEndPoint forwardServer) 
-                  : ipAddress(ip), port(serverPort), ForwardServer(forwardServer) {}
+                  : ipAddress(ip), port(serverPort), ForwardServer(forwardServer) {
 
-        void start() {
+
             LocalSocket = socket(AF_INET, SOCK_DGRAM, 0);
             if (LocalSocket == -1) {
                   std::cerr << "Error al crear LocalSocket UDP\n";
             }
-
-            // Port reuse option
-            // int reuse = 1;
-            // setsockopt(udpSocket, SOL_SOCKET, SO_REUSEPORT, &reuse, sizeof(reuse));
-
             sockaddr_in ServerLocal {};
             ServerLocal.sin_family = AF_INET;
             ServerLocal.sin_addr.s_addr = inet_addr(ipAddress.c_str());
@@ -45,9 +40,13 @@ class DnsServer {
                 std::cerr << "Error al enlazar BIND\n";
                 close(LocalSocket);
             }
+        }
 
+        void start() {
+           
             while(!ShouldStop) {
                 cout <<"===============================VAMOS A EMPEZAR============================="<< endl;
+
                 sockaddr_in LocalClient{};
                 socklen_t LocalClientLen = sizeof(LocalClient);
 
@@ -55,21 +54,6 @@ class DnsServer {
 
                 ssize_t bytesRead = recvfrom(LocalSocket, buffer.data(), buffer.size(), 0, 
                                 reinterpret_cast<struct sockaddr*>(&LocalClient), &LocalClientLen);
-
-//                 vector<uint8_t> data = {
-//     0x32, 0xEB, 0x09, 0x00, 0x00, 0x01, 0x00, 0x00, 
-//     0x00, 0x00, 0x00, 0x00, 0x0C, 0x63, 0x6F, 0x64, 
-//     0x65, 0x63, 0x72, 0x61, 0x66, 0x74, 0x65, 0x72, 
-//     0x73, 0x02, 0x69, 0x6F, 0x00, 0x00, 0x01, 0x00, 
-//     0x01
-// };
-//
-//                 copy(data.begin(), data.end(), buffer.begin());
-                cout << "Request" << endl;
-                for(int i = 0; i < bytesRead; i++)
-                    cout << hex << (int)buffer[i] << " ";
-                cout << endl;
-
                 
                 if (bytesRead == -1) {
                     std::cerr << "Receive error" << std::endl;
@@ -93,8 +77,6 @@ class DnsServer {
             }
         }
 
-
-        /* This server respond only one Question */
         DnsMessage ForwardRequest(DnsMessage Request) {
 
             int ForwardSocket = socket(AF_INET, SOCK_DGRAM, 0);
@@ -150,12 +132,6 @@ class DnsServer {
 
         DnsMessage ProcessRequest(DnsMessage Request) {
 
-
-
-//Authoritative Answer  codecrafeters 0 - me 1
-
-//Recursion Available en el segundo codecrafeters 1 - me 0
-//
             DnsMessage RetResponse = DnsMessage(Request.Header);
             RetResponse.Header.QR = 1;
             RetResponse.Header.QuesCount = 0;
